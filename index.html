@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emlak Stüdyosu V50 (Ultra FX + Pro Suite)</title>
+    
+    <link rel="icon" href="emlak_studyosu_3D_ikon_3.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="emlak_studyosu_3D_ikon_3.jpg">
+    <meta name="msapplication-TileImage" content="emlak_studyosu_3D_ikon_3.jpg">
+
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@700&family=Montserrat:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,700&family=Poppins:wght@400;600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -167,7 +172,7 @@
                 <div class="img-item" onclick="selectActiveImg('sub3')" id="item-sub3">
                     <div class="img-label-area"><label>Detay 3</label><span class="file-name-display" id="name-sub3">Seçilmedi</span></div>
                     <input type="file" id="file-sub3" style="display:none" onchange="loadImg(this, 'sub3')">
-                    <button class="btn-remove-img" style="background:#f1f4f8; color:#333; margin-right:5px;" onclick="document.getElementById('file-sub3').click(); event.stopPropagation();">📂</button>
+                    <button class="btn-remove-img" style="background:#f1f4f8; color:#333; margin-right:5px;" onclick="document.getElementById('file-sub1').click(); event.stopPropagation();">📂</button>
                     <button class="btn-remove-img" onclick="removeImg('sub3', event)">✖</button>
                 </div>
                 <div class="img-item" onclick="selectActiveImg('sub4')" id="item-sub4">
@@ -216,7 +221,7 @@
                     <input type="text" id="footerWeb" class="hf-input" placeholder="Web Adresi..." oninput="draw()">
                 </div>
                 <div id="vitrinFooterSettings" style="display:none;">
-                    <button onclick="toggleFooterModal()" style="width:100%; padding:10px; cursor:pointer; background:#e67e22; color:white; border:none; border-radius:4px; font-weight:bold;">✏️ DANIŞMAN & ÖZELLİKLER</button>
+                    <button onclick="toggleFooterModal()" style="width:100%; padding:10px; cursor:pointer; background:#e67e22; color:white; border-radius:4px; font-weight:bold;">✏️ DANIŞMAN & ÖZELLİKLER</button>
                 </div>
                 <div class="hf-row" style="margin-top:8px;"><span>Zemin</span> <input type="color" id="footerColor" value="#000000" onchange="saveState(); draw()"></div>
             </div>
@@ -304,8 +309,8 @@
 </div>
 
 <script>
-    // --- GÜVENLİK KİLİT SİSTEMİ ---
-    const SECRET_SALT = "oKrCbY2015*"; // Admin paneliyle aynı olmalı
+    // --- GÜVENLİK KİLİDİ SİSTEMİ ---
+    const SECRET_SALT = "oKrCbY2015*";
     let deviceID = localStorage.getItem('karacabay_est_device_id');
     
     if (!deviceID) {
