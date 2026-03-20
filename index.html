@@ -262,6 +262,7 @@
                 <div id="textPosSettings" style="margin-top:12px; display:none;">
                     <div class="control-row"><span>Yatay</span><input type="range" id="txtX" min="0" max="100" onmousedown="saveState()" oninput="moveText('x', this.value)"></div>
                     <div class="control-row"><span>Dikey</span><input type="range" id="txtY" min="0" max="100" onmousedown="saveState()" oninput="moveText('y', this.value)"></div>
+                    <div class="control-row"><span>Açı</span><input type="range" id="txtA" min="-180" max="180" value="0" onmousedown="saveState()" oninput="rotateText(this.value)"></div>
                 </div>
             </div>
             <div id="layerList" class="layer-list"></div>
@@ -488,7 +489,6 @@
             const gx = (canvas.width - gw) * (state.gallery.x/100), gy = (canvas.height - gh) * (state.gallery.y/100);
             
             const gap = 15; 
-            // GÖLGE HATASI DÜZELTİLDİ: Sütun sayısı eklenen resim sayısını geçemez
             let maxCols = gw > gh ? subs.length : (gw > gh*0.5 ? 2 : 1); 
             let cols = Math.min(subs.length, maxCols);
             let rows = Math.ceil(subs.length/cols); 
@@ -496,7 +496,6 @@
             const cw = (gw - (cols-1)*gap)/cols;
             const ch = (gh - (rows-1)*gap)/rows;
             
-            // Sadece kullanılan alana gölge at
             const actualW = cols * cw + (cols-1)*gap;
             const actualH = rows * ch + (rows-1)*gap;
             
@@ -511,38 +510,44 @@
             });
         }
 
+        // --- YENİ ROTASYON SİSTEMİ ---
         state.texts.forEach(t => {
             ctx.save();
-            const tx = canvas.width * (t.x / 100); const ty = canvas.height * (t.y / 100);
-            ctx.font = `${t.italic ? 'italic ' : ''}bold ${t.size}px ${t.font || 'Montserrat'}`;
-            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            const tx = canvas.width * (t.x / 100); 
+            const ty = canvas.height * (t.y / 100);
+            const angle = t.angle || 0;
             
+            // Kanvasın merkezini yazının x,y noktasına taşı ve döndür
+            ctx.translate(tx, ty);
+            ctx.rotate(angle * Math.PI / 180);
+
+            ctx.font = `${t.italic ? 'italic ' : ''}bold ${t.size}px ${t.font || 'Montserrat'}`;
+            ctx.textAlign = "center"; 
+            ctx.textBaseline = "middle";
+            
+            // Tüm fillText/strokeText komutları artık 0, 0 koordinatında çiziliyor (çünkü merkez zaten kaydırıldı)
             if (t.effect === '3d') {
-                // 3 BOYUTLU YAZI EFEKTİ
                 let depth = Math.floor(t.size / 4);
                 ctx.save();
                 ctx.fillStyle = t.color;
                 ctx.shadowColor = "rgba(0,0,0,0.6)";
                 ctx.shadowBlur = 3;
                 ctx.shadowOffsetY = 2;
-                // Derinlik katmanları
                 for(let i = depth; i > 0; i -= 1) {
-                    ctx.fillText(t.text, tx, ty + i);
+                    ctx.fillText(t.text, 0, i);
                 }
                 ctx.restore();
                 
-                // Ön yüz
                 ctx.fillStyle = t.color;
                 ctx.shadowColor = "rgba(0,0,0,0.3)";
                 ctx.shadowBlur = 4;
-                ctx.fillText(t.text, tx, ty);
-                // Canlılık için ince dış hat
+                ctx.fillText(t.text, 0, 0);
+                
                 ctx.lineWidth = 1;
                 ctx.strokeStyle = "rgba(255,255,255,0.7)";
-                ctx.strokeText(t.text, tx, ty);
+                ctx.strokeText(t.text, 0, 0);
             }
             else if (t.effect === 'ribbon') {
-                // KIRMIZI ŞERİT (RİBBON) EFEKTİ
                 let tw = ctx.measureText(t.text).width;
                 let th = t.size * 1.5;
                 let pad = t.size * 0.8;
@@ -552,42 +557,40 @@
                 ctx.shadowBlur = 15;
                 ctx.shadowOffsetY = 5;
                 
-                // Ana Kırmızı Şerit Poligonu
-                ctx.fillStyle = "#e74c3c"; // Şerit rengi
+                ctx.fillStyle = "#e74c3c"; 
                 ctx.beginPath();
-                ctx.moveTo(tx - tw/2 - pad - 10, ty + th/2);
-                ctx.lineTo(tx - tw/2 - pad + 15, ty - th/2);
-                ctx.lineTo(tx + tw/2 + pad + 15, ty - th/2);
-                ctx.lineTo(tx + tw/2 + pad - 10, ty + th/2);
+                ctx.moveTo(-tw/2 - pad - 10, th/2);
+                ctx.lineTo(-tw/2 - pad + 15, -th/2);
+                ctx.lineTo(tw/2 + pad + 15, -th/2);
+                ctx.lineTo(tw/2 + pad - 10, th/2);
                 ctx.fill();
                 ctx.restore();
                 
-                // İnce iç çerçeve (Şık görünüm için)
                 ctx.save();
                 ctx.beginPath();
-                ctx.moveTo(tx - tw/2 - pad + 1, ty + th/2 - 4);
-                ctx.lineTo(tx - tw/2 - pad + 20, ty - th/2 + 4);
-                ctx.lineTo(tx + tw/2 + pad + 2, ty - th/2 + 4);
-                ctx.lineTo(tx + tw/2 + pad - 17, ty + th/2 - 4);
+                ctx.moveTo(-tw/2 - pad + 1, th/2 - 4);
+                ctx.lineTo(-tw/2 - pad + 20, -th/2 + 4);
+                ctx.lineTo(tw/2 + pad + 2, -th/2 + 4);
+                ctx.lineTo(tw/2 + pad - 17, th/2 - 4);
                 ctx.strokeStyle = "rgba(255,255,255,0.3)";
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 ctx.restore();
 
-                // Metnin kendisi
                 ctx.fillStyle = t.color;
                 ctx.shadowColor = "rgba(0,0,0,0.8)";
                 ctx.shadowBlur = 5;
-                ctx.fillText(t.text, tx, ty);
+                ctx.fillText(t.text, 0, 0);
             }
-            else if (t.effect === 'lightsaber') { ctx.shadowColor = t.color; [40, 60, 80].forEach(b => { ctx.shadowBlur = b; ctx.strokeText(t.text, tx, ty); }); ctx.lineWidth = 3; ctx.strokeStyle = "#ffffff"; ctx.strokeText(t.text, tx, ty); ctx.fillStyle = "#fff"; ctx.fillText(t.text, tx, ty); } 
-            else if (t.effect === 'gold') { ctx.shadowColor = "#000"; ctx.shadowBlur = 5; ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 4; ctx.strokeText(t.text, tx, ty); ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.strokeText(t.text, tx, ty); ctx.fillStyle = t.color; ctx.fillText(t.text, tx, ty); }
-            else if (t.effect === 'retro') { ctx.shadowColor = "#ff00ff"; ctx.shadowBlur = 15; ctx.strokeStyle = "#00ffff"; ctx.lineWidth = 3; ctx.strokeText(t.text, tx, ty); ctx.fillStyle = "#ff00ff"; ctx.fillText(t.text, tx, ty); }
-            else if (t.effect === 'neon') { ctx.shadowColor = t.color; ctx.shadowBlur = 25; ctx.lineWidth = 3; ctx.strokeStyle = "#fff"; ctx.strokeText(t.text, tx, ty); ctx.fillStyle = t.color; ctx.fillText(t.text, tx, ty); } 
-            else if (t.effect === 'outline') { ctx.lineWidth = 4; ctx.strokeStyle = "#000"; ctx.strokeText(t.text, tx, ty); ctx.fillStyle = t.color; ctx.fillText(t.text, tx, ty); } 
-            else if (t.effect === 'shadow') { ctx.shadowColor = "rgba(0,0,0,0.85)"; ctx.shadowBlur = 10; ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 5; ctx.fillStyle = t.color; ctx.fillText(t.text, tx, ty); } 
-            else if (t.effect === 'glow') { ctx.shadowColor = "#fff"; ctx.shadowBlur = 30; ctx.fillStyle = t.color; ctx.fillText(t.text, tx, ty); } 
-            else { ctx.fillStyle = t.color; ctx.fillText(t.text, tx, ty); }
+            else if (t.effect === 'lightsaber') { ctx.shadowColor = t.color; [40, 60, 80].forEach(b => { ctx.shadowBlur = b; ctx.strokeText(t.text, 0, 0); }); ctx.lineWidth = 3; ctx.strokeStyle = "#ffffff"; ctx.strokeText(t.text, 0, 0); ctx.fillStyle = "#fff"; ctx.fillText(t.text, 0, 0); } 
+            else if (t.effect === 'gold') { ctx.shadowColor = "#000"; ctx.shadowBlur = 5; ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 4; ctx.strokeText(t.text, 0, 0); ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.strokeText(t.text, 0, 0); ctx.fillStyle = t.color; ctx.fillText(t.text, 0, 0); }
+            else if (t.effect === 'retro') { ctx.shadowColor = "#ff00ff"; ctx.shadowBlur = 15; ctx.strokeStyle = "#00ffff"; ctx.lineWidth = 3; ctx.strokeText(t.text, 0, 0); ctx.fillStyle = "#ff00ff"; ctx.fillText(t.text, 0, 0); }
+            else if (t.effect === 'neon') { ctx.shadowColor = t.color; ctx.shadowBlur = 25; ctx.lineWidth = 3; ctx.strokeStyle = "#fff"; ctx.strokeText(t.text, 0, 0); ctx.fillStyle = t.color; ctx.fillText(t.text, 0, 0); } 
+            else if (t.effect === 'outline') { ctx.lineWidth = 4; ctx.strokeStyle = "#000"; ctx.strokeText(t.text, 0, 0); ctx.fillStyle = t.color; ctx.fillText(t.text, 0, 0); } 
+            else if (t.effect === 'shadow') { ctx.shadowColor = "rgba(0,0,0,0.85)"; ctx.shadowBlur = 10; ctx.shadowOffsetX = 5; ctx.shadowOffsetY = 5; ctx.fillStyle = t.color; ctx.fillText(t.text, 0, 0); } 
+            else if (t.effect === 'glow') { ctx.shadowColor = "#fff"; ctx.shadowBlur = 30; ctx.fillStyle = t.color; ctx.fillText(t.text, 0, 0); } 
+            else { ctx.fillStyle = t.color; ctx.fillText(t.text, 0, 0); }
+            
             ctx.restore();
         });
 
@@ -600,9 +603,14 @@
     function updateMasterPos(a,v){ state.imgs[state.activeImgKey][a]=v; draw(); }
     function loadImg(inp,k){ if(inp.files[0]){ saveState(); const fName = inp.files[0].name; state.imgs[k].fileName = fName; document.getElementById('name-'+k).innerText = fName; const r=new FileReader(); r.onload=e=>{ const i=new Image(); i.src=e.target.result; i.onload=()=>{state.imgs[k].obj=i; state.imgs[k].src=e.target.result; draw();}; }; r.readAsDataURL(inp.files[0]); } }
     function removeImg(k,e){ e.stopPropagation(); saveState(); state.imgs[k].obj=null; state.imgs[k].src=null; state.imgs[k].fileName = "Seçilmedi"; document.getElementById('name-'+k).innerText = "Seçilmedi"; draw(); }
-    function handleTextAction(){ const v=document.getElementById('tTxt').value; if(!v)return; saveState(); const f=document.getElementById('tFont').value, s=document.getElementById('tSize').value, c=document.getElementById('tColor').value, it=document.getElementById('tItalic').checked, ef=document.getElementById('tEffect').value; if(state.editingId!==null){ const t=state.texts.find(x=>x.id===state.editingId); t.text=v; t.font=f; t.size=s; t.color=c; t.italic=it; t.effect=ef; cancelEdit(); } else { const id=Date.now(); state.texts.push({id, text:v, font:f, size:s, color:c, italic:it, effect:ef, x:50, y:50}); loadTextToEdit(id); } draw(); renderLayerList(); }
-    function loadTextToEdit(id){ const t=state.texts.find(x=>x.id===id); state.editingId=id; document.getElementById('tTxt').value=t.text; document.getElementById('tFont').value=t.font; document.getElementById('tSize').value=t.size; document.getElementById('tColor').value=t.color; document.getElementById('tItalic').checked=t.italic; document.getElementById('tEffect').value=t.effect||'none'; document.getElementById('textPosSettings').style.display='block'; document.getElementById('txtX').value=t.x; document.getElementById('txtY').value=t.y; document.getElementById('btnAction').innerText="GÜNCELLE ✅"; renderLayerList(); draw(); }
+    
+    function handleTextAction(){ const v=document.getElementById('tTxt').value; if(!v)return; saveState(); const f=document.getElementById('tFont').value, s=document.getElementById('tSize').value, c=document.getElementById('tColor').value, it=document.getElementById('tItalic').checked, ef=document.getElementById('tEffect').value; if(state.editingId!==null){ const t=state.texts.find(x=>x.id===state.editingId); t.text=v; t.font=f; t.size=s; t.color=c; t.italic=it; t.effect=ef; cancelEdit(); } else { const id=Date.now(); state.texts.push({id, text:v, font:f, size:s, color:c, italic:it, effect:ef, x:50, y:50, angle:0}); loadTextToEdit(id); } draw(); renderLayerList(); }
+    
+    function loadTextToEdit(id){ const t=state.texts.find(x=>x.id===id); state.editingId=id; document.getElementById('tTxt').value=t.text; document.getElementById('tFont').value=t.font; document.getElementById('tSize').value=t.size; document.getElementById('tColor').value=t.color; document.getElementById('tItalic').checked=t.italic; document.getElementById('tEffect').value=t.effect||'none'; document.getElementById('textPosSettings').style.display='block'; document.getElementById('txtX').value=t.x; document.getElementById('txtY').value=t.y; document.getElementById('txtA').value=t.angle||0; document.getElementById('btnAction').innerText="GÜNCELLE ✅"; renderLayerList(); draw(); }
+    
     function moveText(a,v){ if(state.editingId){ state.texts.find(x=>x.id===state.editingId)[a]=v; draw(); } }
+    function rotateText(v){ if(state.editingId){ state.texts.find(x=>x.id===state.editingId).angle=parseInt(v); draw(); } }
+    
     function cancelEdit(){ state.editingId=null; document.getElementById('tTxt').value=""; document.getElementById('textPosSettings').style.display='none'; document.getElementById('btnAction').innerText="➕ KATMAN EKLE"; renderLayerList(); draw(); }
     function delTx(id,e){ e.stopPropagation(); saveState(); state.texts=state.texts.filter(x=>x.id!==id); if(state.editingId===id)cancelEdit(); renderLayerList(); draw(); }
     function renderLayerList(){ const l=document.getElementById('layerList'); l.innerHTML=''; state.texts.forEach(t=>{ const d=document.createElement('div'); d.className=`layer-row ${t.id===state.editingId?'selected':''}`; d.onclick=()=>loadTextToEdit(t.id); d.innerHTML=`<span style="flex:1">${t.text}</span><button style="background:red; color:white; border:none; border-radius:3px; cursor:pointer;" onclick="delTx(${t.id},event)">✖</button>`; l.appendChild(d); }); }
@@ -615,7 +623,6 @@
     function loadAgentImg(i){ if(i.files[0]){ saveState(); const r=new FileReader(); r.onload=e=>{ const img=new Image(); img.src=e.target.result; img.onload=()=>{state.footer.agentImg=img; state.footer.agentImgSrc=e.target.result; draw();}; }; r.readAsDataURL(i.files[0]); } }
     function download(){ const a=document.createElement('a'); a.download='ilan.jpg'; a.href=canvas.toDataURL('image/jpeg',0.95); a.click(); }
     
-    // KOPYALA HATASI DÜZELTİLDİ (Güvenlik Önlemli Alternatif Yapı)
     async function copyToClipboard() { 
         try { 
             if (!navigator.clipboard || !navigator.clipboard.write) {
