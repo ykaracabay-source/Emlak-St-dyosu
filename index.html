@@ -243,8 +243,14 @@
                     <div class="palette-circle" onclick="setTColor('#003399')" style="background:#003399;"></div>
                     <div class="palette-circle" onclick="setTColor('#ffffff')" style="background:#ffffff;"></div>
                     <input type="color" id="tColor" value="#ffffff" oninput="draw()" style="width:30px; height:22px; border:none; background:transparent;">
+                    
                     <select id="tEffect" class="hf-input" style="width:auto;" onchange="draw()">
                         <option value="none">Efekt Yok</option>
+                        <option value="badge-red">🔴 Kırmızı Mühür</option>
+                        <option value="badge-gold">🟡 Altın Damga</option>
+                        <option value="badge-black">⚫ Siyah Kaşe</option>
+                        <option value="badge-blue">🔵 Mavi Etiket</option>
+                        <option value="badge-star">⭐ Yıldız Fırsat</option>
                         <option value="3d">🧊 3D Boyutlu</option>
                         <option value="ribbon">🎀 Kırmızı Şerit</option>
                         <option value="shadow">🌑 Yumuşak Gölge</option>
@@ -311,6 +317,7 @@
                     <option value="badge-gold">🟡 Altın Lüks Damga</option>
                     <option value="badge-black">⚫ Siyah Kurumsal Kaşe</option>
                     <option value="badge-blue">🔵 Mavi Güven Etiketi</option>
+                    <option value="badge-star">⭐ Yıldız Fırsat Kaşesi</option>
                 </select>
                 <button class="btn-action" style="width:100%; padding:8px; background:#fff; color:#d35400; border:none; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="addBadge()">➕ KAŞEYİ SAHNEYE EKLE</button>
             </div>
@@ -507,42 +514,11 @@
         canvas.width = 1080; canvas.height = state.format === 'post' ? 1080 : 1920;
         ctx.fillStyle = "#ecf0f1"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // MİNİ PS EFEKTLERİNİ FOTOĞRAFLARA UYGULA
         ctx.filter = `brightness(${state.filters.br}%) contrast(${state.filters.ct}%) saturate(${state.filters.sat}%)`;
         if (state.imgs.main.obj) drawCr(ctx, state.imgs.main, 0, 0, canvas.width, canvas.height);
+        ctx.filter = 'none';
 
-        const subs = [state.imgs.sub1, state.imgs.sub2, state.imgs.sub3, state.imgs.sub4].filter(i=>i.obj);
-        if (subs.length > 0) {
-            const gw = canvas.width * (state.gallery.w/100), gh = canvas.height * (state.gallery.h/100);
-            const gx = (canvas.width - gw) * (state.gallery.x/100), gy = (canvas.height - gh) * (state.gallery.y/100);
-            
-            const gap = 15; 
-            let maxCols = gw > gh ? subs.length : (gw > gh*0.5 ? 2 : 1); 
-            let cols = Math.min(subs.length, maxCols);
-            let rows = Math.ceil(subs.length/cols); 
-            
-            const cw = (gw - (cols-1)*gap)/cols;
-            const ch = (gh - (rows-1)*gap)/rows;
-            
-            const actualW = cols * cw + (cols-1)*gap;
-            const actualH = rows * ch + (rows-1)*gap;
-            
-            ctx.filter = 'none'; // Çerçeve için sıfırla
-            ctx.fillStyle="rgba(0,0,0,0.5)"; 
-            ctx.fillRect(gx-10, gy-10, actualW+20, actualH+20);
-            
-            subs.forEach((img, i)=>{ 
-                const c=i%cols, r=Math.floor(i/cols); 
-                const ix=gx+c*(cw+gap), iy=gy+r*(ch+gap); 
-                ctx.fillStyle="#fff"; ctx.fillRect(ix-3, iy-3, cw+6, ch+6); 
-                ctx.filter = `brightness(${state.filters.br}%) contrast(${state.filters.ct}%) saturate(${state.filters.sat}%)`; // Fotoğraf için uygula
-                drawCr(ctx, img, ix, iy, cw, ch); 
-                ctx.filter = 'none'; // Sıfırla
-            });
-        }
-        
-        ctx.filter = 'none'; // Diğer her şey için filtreyi tamamen kapat
-
+        // 1. ÖNCE ÜST VE ALT ŞERİTLER ÇİZİLİYOR
         const hH = document.getElementById('showHeader').checked ? parseInt(document.getElementById('headerHeight').value) : 0;
         if (hH > 0) {
             ctx.fillStyle = document.getElementById('headerBg').value; ctx.fillRect(0,0,canvas.width,hH); ctx.fillStyle = document.getElementById('headerColor').value;
@@ -583,6 +559,37 @@
             }
         }
 
+        // 2. EN SON DETAY RESİMLERİ (KATMAN SORUNU ÇÖZÜLDÜ - ARTIK EN ÜSTTE)
+        const subs = [state.imgs.sub1, state.imgs.sub2, state.imgs.sub3, state.imgs.sub4].filter(i=>i.obj);
+        if (subs.length > 0) {
+            const gw = canvas.width * (state.gallery.w/100), gh = canvas.height * (state.gallery.h/100);
+            const gx = (canvas.width - gw) * (state.gallery.x/100), gy = (canvas.height - gh) * (state.gallery.y/100);
+            
+            const gap = 15; 
+            let maxCols = gw > gh ? subs.length : (gw > gh*0.5 ? 2 : 1); 
+            let cols = Math.min(subs.length, maxCols);
+            let rows = Math.ceil(subs.length/cols); 
+            
+            const cw = (gw - (cols-1)*gap)/cols;
+            const ch = (gh - (rows-1)*gap)/rows;
+            
+            const actualW = cols * cw + (cols-1)*gap;
+            const actualH = rows * ch + (rows-1)*gap;
+            
+            ctx.filter = 'none'; 
+            ctx.fillStyle="rgba(0,0,0,0.5)"; 
+            ctx.fillRect(gx-10, gy-10, actualW+20, actualH+20);
+            
+            subs.forEach((img, i)=>{ 
+                const c=i%cols, r=Math.floor(i/cols); 
+                const ix=gx+c*(cw+gap), iy=gy+r*(ch+gap); 
+                ctx.fillStyle="#fff"; ctx.fillRect(ix-3, iy-3, cw+6, ch+6); 
+                ctx.filter = `brightness(${state.filters.br}%) contrast(${state.filters.ct}%) saturate(${state.filters.sat}%)`; 
+                drawCr(ctx, img, ix, iy, cw, ch); 
+                ctx.filter = 'none'; 
+            });
+        }
+
         // --- METİNLER VE KAŞELER ---
         state.texts.forEach(t => {
             ctx.save();
@@ -597,8 +604,56 @@
             ctx.textAlign = "center"; 
             ctx.textBaseline = "middle";
             
-            // YENİ KAŞE TASARIMLARI
-            if (t.effect && t.effect.startsWith('badge-')) {
+            // YENİ: YILDIZ FIRSAT KAŞESİ EFEKTİ
+            if (t.effect === 'badge-star') {
+                let tw = ctx.measureText(t.text).width;
+                let radius = Math.max(tw / 2 + t.size * 0.8, t.size * 1.8); 
+                let spikes = 16;
+                let innerRadius = radius * 0.75;
+                
+                ctx.save();
+                ctx.shadowColor = "rgba(0,0,0,0.6)";
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetY = 8;
+                
+                ctx.fillStyle = "#e74c3c"; // Kırmızı Yıldız
+                ctx.beginPath();
+                let rot = Math.PI / 2 * 3;
+                let x = 0, y = 0;
+                let step = Math.PI / spikes;
+                
+                ctx.moveTo(0, 0 - radius);
+                for (let i = 0; i < spikes; i++) {
+                    x = Math.cos(rot) * radius;
+                    y = Math.sin(rot) * radius;
+                    ctx.lineTo(x, y);
+                    rot += step;
+                    
+                    x = Math.cos(rot) * innerRadius;
+                    y = Math.sin(rot) * innerRadius;
+                    ctx.lineTo(x, y);
+                    rot += step;
+                }
+                ctx.lineTo(0, 0 - radius);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(0, 0, innerRadius - 4, 0, Math.PI * 2);
+                ctx.strokeStyle = "rgba(255,255,255,0.4)";
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.restore();
+                
+                ctx.fillStyle = "#fff";
+                ctx.shadowColor = "rgba(0,0,0,0.8)";
+                ctx.shadowBlur = 4;
+                ctx.fillText(t.text, 0, 0);
+            }
+            // DİĞER KAŞE TASARIMLARI
+            else if (t.effect && t.effect.startsWith('badge-')) {
                 let tw = ctx.measureText(t.text).width;
                 let th = t.size * 1.5;
                 let padX = t.size * 1.2;
@@ -703,17 +758,16 @@
 
         ['logo1','logo2'].forEach(k=>{ if(state.imgs[k].obj) { const i=state.imgs[k].obj, lw=canvas.width*(state.imgs[k].size/100), lh=lw*(i.height/i.width); ctx.drawImage(i, (canvas.width-lw)*(state.imgs[k].x/100), (canvas.height-lh)*(state.imgs[k].y/100), lw, lh); } });
         
-        // YENİ: FİLİGRAN (WATERMARK) UYGULAMASI
+        // FİLİGRAN
         if (document.getElementById('showWatermark').checked) {
             let wmText = document.getElementById('watermarkText').value || "KOPYALANAMAZ";
             ctx.save();
             ctx.font = "bold 50px Montserrat";
-            ctx.fillStyle = "rgba(255, 255, 255, 0.2)"; // Yarı şeffaf beyaz
+            ctx.fillStyle = "rgba(255, 255, 255, 0.2)"; 
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.rotate(-30 * Math.PI / 180);
             
-            // Tüm ekranı kaplayacak şekilde çapraz döşe
             for(let wx = -canvas.width; wx < canvas.width * 2; wx += 400) {
                 for(let wy = -canvas.height; wy < canvas.height * 2; wy += 200) {
                     ctx.fillText(wmText, wx, wy);
@@ -732,13 +786,11 @@
     
     function handleTextAction(){ const v=document.getElementById('tTxt').value; if(!v)return; saveState(); const f=document.getElementById('tFont').value, s=document.getElementById('tSize').value, c=document.getElementById('tColor').value, it=document.getElementById('tItalic').checked, ef=document.getElementById('tEffect').value; if(state.editingId!==null){ const t=state.texts.find(x=>x.id===state.editingId); t.text=v; t.font=f; t.size=s; t.color=c; t.italic=it; t.effect=ef; cancelEdit(); } else { const id=Date.now(); state.texts.push({id, text:v, font:f, size:s, color:c, italic:it, effect:ef, x:50, y:50, angle:0}); loadTextToEdit(id); } draw(); renderLayerList(); }
     
-    // YENİ KAŞE EKLEME FONKSİYONU
     function addBadge() {
         saveState();
         const bText = document.getElementById('badgeSelect').value;
         const bStyle = document.getElementById('badgeStyle').value;
         const id = Date.now();
-        // Hazır kaşe şablonu (Köşede çapraz başlasın diye angle:-15, size:40)
         state.texts.push({id: id, text: bText, font: "'Montserrat'", size: 40, color: '#ffffff', italic: false, effect: bStyle, x: 20, y: 20, angle: -15});
         loadTextToEdit(id);
         draw();
