@@ -149,6 +149,13 @@
                     <span>Boyut</span> <input type="range" id="masterSize" min="5" max="100" value="20" onmousedown="saveState()" oninput="updateMasterPos('size', this.value)">
                 </div>
             </div>
+            
+            <div class="group-title" style="background: #8e44ad; border-left-color: #9b59b6;">🎨 GÖRSEL AYARLARI (MİNİ PS)</div>
+            <div class="hf-settings" style="background: #9b59b6;">
+                <div class="control-row"><span>Parlaklık</span> <input type="range" id="fltBr" min="50" max="150" value="100" onmousedown="saveState()" oninput="updateFilters()"></div>
+                <div class="control-row"><span>Canlılık</span> <input type="range" id="fltSat" min="0" max="200" value="100" onmousedown="saveState()" oninput="updateFilters()"></div>
+                <div class="control-row"><span>Kontrast</span> <input type="range" id="fltCt" min="50" max="150" value="100" onmousedown="saveState()" oninput="updateFilters()"></div>
+            </div>
 
             <div class="img-selector-list" style="margin-top:10px;">
                 <div class="img-item active" onclick="selectActiveImg('main')" id="item-main">
@@ -267,7 +274,53 @@
             </div>
             <div id="layerList" class="layer-list"></div>
 
-            <div class="group-title">7. Paylaşım & Çıktı</div>
+            <div class="group-title" style="background: #d35400; border-left-color: #e67e22;">8. KURUMSAL KAŞELER</div>
+            <div class="hf-settings" style="background: #e67e22;">
+                <select id="badgeSelect" class="hf-input" style="margin-bottom:6px; font-weight:bold;">
+                    <option value="SATILDI">SATILDI</option>
+                    <option value="KİRALANDI">KİRALANDI</option>
+                    <option value="YENİ FİYAT">YENİ FİYAT</option>
+                    <option value="FİYAT DÜŞTÜ!">FİYAT DÜŞTÜ!</option>
+                    <option value="ACİL SATILIK">ACİL SATILIK</option>
+                    <option value="FIRSAT">FIRSAT</option>
+                    <option value="DENİZ MANZARALI">DENİZ MANZARALI</option>
+                    <option value="HAVUZLU SİTE">HAVUZLU SİTE</option>
+                    <option value="HAVUZLU VİLLA">HAVUZLU VİLLA</option>
+                    <option value="SIFIR BİNA">SIFIR BİNA</option>
+                    <option value="FULL EŞYALI">FULL EŞYALI</option>
+                    <option value="LÜKS TASARIM">LÜKS TASARIM</option>
+                    <option value="VATANDAŞLIĞA UYGUN">VATANDAŞLIĞA UYGUN</option>
+                    <option value="İKAMETE UYGUN">İKAMETE UYGUN</option>
+                    <option value="KREDİYE UYGUN">KREDİYE UYGUN</option>
+                    <option value="YÜKSEK KİRA GETİRİSİ">YÜKSEK KİRA GETİRİSİ</option>
+                    <option value="TEK YETKİLİ PORTFÖY">TEK YETKİLİ PORTFÖY</option>
+                    <option value="KURUMSAL FİRMALARA ÖZEL">KURUMSAL FİRMALARA ÖZEL</option>
+                    <option value="YATIRIMCILARA ÖZEL">YATIRIMCILARA ÖZEL</option>
+                    <option value="TAM TİCARİ">TAM TİCARİ</option>
+                    <option value="KONUT">KONUT</option>
+                    <option value="KONUT & TİCARİ">KONUT & TİCARİ</option>
+                    <option value="AL SAT'A UYGUN">AL SAT'A UYGUN</option>
+                    <option value="YÜKSEK TAVAN">YÜKSEK TAVAN</option>
+                    <option value="GENİŞ KAT PLANI">GENİŞ KAT PLANI</option>
+                    <option value="MERKEZİ LOKASYON">MERKEZİ LOKASYON</option>
+                    <option value="İSKANLI & KULLANIMA HAZIR">İSKANLI & KULLANIMA HAZIR</option>
+                    <option value="DEPO & LOJİSTİK">DEPO & LOJİSTİK</option>
+                </select>
+                <select id="badgeStyle" class="hf-input" style="margin-bottom:8px;">
+                    <option value="badge-red">🔴 Kırmızı Dikkat Mührü</option>
+                    <option value="badge-gold">🟡 Altın Lüks Damga</option>
+                    <option value="badge-black">⚫ Siyah Kurumsal Kaşe</option>
+                    <option value="badge-blue">🔵 Mavi Güven Etiketi</option>
+                </select>
+                <button class="btn-action" style="width:100%; padding:8px; background:#fff; color:#d35400; border:none; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="addBadge()">➕ KAŞEYİ SAHNEYE EKLE</button>
+            </div>
+
+            <div class="group-title" style="background:#c0392b; border-left-color: #e74c3c;">9. GÜVENLİK & ÇIKTI</div>
+            <div class="hf-settings" style="background:#e74c3c;">
+                <label style="font-weight:bold; cursor:pointer; display:block; margin-bottom:5px;"><input type="checkbox" id="showWatermark" onchange="draw()"> 🔒 Filigran Korumasını Aç</label>
+                <input type="text" id="watermarkText" class="hf-input" value="@karacabayre.est" oninput="draw()" placeholder="Filigran metniniz...">
+            </div>
+            
             <button class="btn-comm btn-copy" onclick="copyToClipboard()">📋 KOPYALA WP (PNG)</button>
             <button class="btn-comm btn-print" onclick="window.print()">🖨️ YAZDIR (A4)</button>
             <button class="btn-comm btn-jpg" onclick="download()">💾 KAYDET (JPG)</button>
@@ -367,6 +420,7 @@
 
     let state = {
         format: 'post', activeImgKey: 'main', projectName: "Yeni İlan",
+        filters: { br: 100, sat: 100, ct: 100 },
         imgs: { 
             main: {obj:null, src:null, x:50, y:50, fileName: "Seçilmedi"}, 
             sub1: {obj:null, src:null, x:50, y:50, fileName: "Seçilmedi"}, sub2: {obj:null, src:null, x:50, y:50, fileName: "Seçilmedi"}, 
@@ -382,7 +436,7 @@
     function saveState() {
         const snap = {
             format: state.format, gallery: {...state.gallery}, texts: JSON.parse(JSON.stringify(state.texts)),
-            footerMode: state.footer.mode, footerImg: state.footer.agentImgSrc,
+            footerMode: state.footer.mode, footerImg: state.footer.agentImgSrc, filters: {...state.filters},
             dom: {
                 showHeader: document.getElementById('showHeader').checked, headerText: document.getElementById('headerText').value, 
                 headerH: document.getElementById('headerHeight').value, headerF: document.getElementById('headerFont').value,
@@ -392,7 +446,8 @@
                 footerWeb: document.getElementById('footerWeb').value, footerH: document.getElementById('footerHeight').value,
                 footerC: document.getElementById('footerColor').value, agentN: document.getElementById('agentName').value,
                 agentT: document.getElementById('agentTitle').value, agentE: document.getElementById('agentExtra').value,
-                feats: [1,2,3,4,5,6].map(n=>document.getElementById('feat'+n).value)
+                feats: [1,2,3,4,5,6].map(n=>document.getElementById('feat'+n).value),
+                showWm: document.getElementById('showWatermark').checked, wmText: document.getElementById('watermarkText').value
             }
         };
         for(let k in state.imgs) snap[k] = {...state.imgs[k], obj:null};
@@ -403,6 +458,7 @@
         if(history.length === 0) return;
         const last = JSON.parse(history.pop());
         state.format = last.format; state.gallery = last.gallery; state.texts = last.texts; state.footer.mode = last.footerMode;
+        if(last.filters) { state.filters = last.filters; document.getElementById('fltBr').value = state.filters.br; document.getElementById('fltSat').value = state.filters.sat; document.getElementById('fltCt').value = state.filters.ct; }
         const d = last.dom;
         document.getElementById('showHeader').checked = d.showHeader; document.getElementById('headerText').value = d.headerText;
         document.getElementById('headerHeight').value = d.headerH; document.getElementById('headerFont').value = d.headerF;
@@ -412,6 +468,8 @@
         document.getElementById('footerWeb').value = d.footerWeb; document.getElementById('footerHeight').value = d.footerH;
         document.getElementById('footerColor').value = d.footerC; document.getElementById('agentName').value = d.agentN;
         document.getElementById('agentTitle').value = d.agentT; document.getElementById('agentExtra').value = d.agentE;
+        if(d.showWm !== undefined) document.getElementById('showWatermark').checked = d.showWm;
+        if(d.wmText !== undefined) document.getElementById('watermarkText').value = d.wmText;
         d.feats.forEach((f,i)=> { if(document.getElementById('feat'+(i+1))) document.getElementById('feat'+(i+1)).value=f; });
         for(let k in state.imgs) {
             state.imgs[k].x = last[k].x; state.imgs[k].y = last[k].y; state.imgs[k].size = last[k].size;
@@ -436,12 +494,54 @@
     }
 
     function setTColor(hex) { document.getElementById('tColor').value = hex; draw(); }
+    
+    function updateFilters() {
+        state.filters.br = document.getElementById('fltBr').value;
+        state.filters.sat = document.getElementById('fltSat').value;
+        state.filters.ct = document.getElementById('fltCt').value;
+        draw();
+    }
 
     function draw() {
         if(document.getElementById('appWrapper').style.display === 'none') return;
         canvas.width = 1080; canvas.height = state.format === 'post' ? 1080 : 1920;
         ctx.fillStyle = "#ecf0f1"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // MİNİ PS EFEKTLERİNİ FOTOĞRAFLARA UYGULA
+        ctx.filter = `brightness(${state.filters.br}%) contrast(${state.filters.ct}%) saturate(${state.filters.sat}%)`;
         if (state.imgs.main.obj) drawCr(ctx, state.imgs.main, 0, 0, canvas.width, canvas.height);
+
+        const subs = [state.imgs.sub1, state.imgs.sub2, state.imgs.sub3, state.imgs.sub4].filter(i=>i.obj);
+        if (subs.length > 0) {
+            const gw = canvas.width * (state.gallery.w/100), gh = canvas.height * (state.gallery.h/100);
+            const gx = (canvas.width - gw) * (state.gallery.x/100), gy = (canvas.height - gh) * (state.gallery.y/100);
+            
+            const gap = 15; 
+            let maxCols = gw > gh ? subs.length : (gw > gh*0.5 ? 2 : 1); 
+            let cols = Math.min(subs.length, maxCols);
+            let rows = Math.ceil(subs.length/cols); 
+            
+            const cw = (gw - (cols-1)*gap)/cols;
+            const ch = (gh - (rows-1)*gap)/rows;
+            
+            const actualW = cols * cw + (cols-1)*gap;
+            const actualH = rows * ch + (rows-1)*gap;
+            
+            ctx.filter = 'none'; // Çerçeve için sıfırla
+            ctx.fillStyle="rgba(0,0,0,0.5)"; 
+            ctx.fillRect(gx-10, gy-10, actualW+20, actualH+20);
+            
+            subs.forEach((img, i)=>{ 
+                const c=i%cols, r=Math.floor(i/cols); 
+                const ix=gx+c*(cw+gap), iy=gy+r*(ch+gap); 
+                ctx.fillStyle="#fff"; ctx.fillRect(ix-3, iy-3, cw+6, ch+6); 
+                ctx.filter = `brightness(${state.filters.br}%) contrast(${state.filters.ct}%) saturate(${state.filters.sat}%)`; // Fotoğraf için uygula
+                drawCr(ctx, img, ix, iy, cw, ch); 
+                ctx.filter = 'none'; // Sıfırla
+            });
+        }
+        
+        ctx.filter = 'none'; // Diğer her şey için filtreyi tamamen kapat
 
         const hH = document.getElementById('showHeader').checked ? parseInt(document.getElementById('headerHeight').value) : 0;
         if (hH > 0) {
@@ -483,41 +583,13 @@
             }
         }
 
-        const subs = [state.imgs.sub1, state.imgs.sub2, state.imgs.sub3, state.imgs.sub4].filter(i=>i.obj);
-        if (subs.length > 0) {
-            const gw = canvas.width * (state.gallery.w/100), gh = canvas.height * (state.gallery.h/100);
-            const gx = (canvas.width - gw) * (state.gallery.x/100), gy = (canvas.height - gh) * (state.gallery.y/100);
-            
-            const gap = 15; 
-            let maxCols = gw > gh ? subs.length : (gw > gh*0.5 ? 2 : 1); 
-            let cols = Math.min(subs.length, maxCols);
-            let rows = Math.ceil(subs.length/cols); 
-            
-            const cw = (gw - (cols-1)*gap)/cols;
-            const ch = (gh - (rows-1)*gap)/rows;
-            
-            const actualW = cols * cw + (cols-1)*gap;
-            const actualH = rows * ch + (rows-1)*gap;
-            
-            ctx.fillStyle="rgba(0,0,0,0.5)"; 
-            ctx.fillRect(gx-10, gy-10, actualW+20, actualH+20);
-            
-            subs.forEach((img, i)=>{ 
-                const c=i%cols, r=Math.floor(i/cols); 
-                const ix=gx+c*(cw+gap), iy=gy+r*(ch+gap); 
-                ctx.fillStyle="#fff"; ctx.fillRect(ix-3, iy-3, cw+6, ch+6); 
-                drawCr(ctx, img, ix, iy, cw, ch); 
-            });
-        }
-
-        // --- YENİ ROTASYON SİSTEMİ ---
+        // --- METİNLER VE KAŞELER ---
         state.texts.forEach(t => {
             ctx.save();
             const tx = canvas.width * (t.x / 100); 
             const ty = canvas.height * (t.y / 100);
             const angle = t.angle || 0;
             
-            // Kanvasın merkezini yazının x,y noktasına taşı ve döndür
             ctx.translate(tx, ty);
             ctx.rotate(angle * Math.PI / 180);
 
@@ -525,8 +597,43 @@
             ctx.textAlign = "center"; 
             ctx.textBaseline = "middle";
             
-            // Tüm fillText/strokeText komutları artık 0, 0 koordinatında çiziliyor (çünkü merkez zaten kaydırıldı)
-            if (t.effect === '3d') {
+            // YENİ KAŞE TASARIMLARI
+            if (t.effect && t.effect.startsWith('badge-')) {
+                let tw = ctx.measureText(t.text).width;
+                let th = t.size * 1.5;
+                let padX = t.size * 1.2;
+                let padY = t.size * 0.6;
+                
+                ctx.save();
+                ctx.shadowColor = "rgba(0,0,0,0.6)";
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetY = 8;
+                
+                let bgCol = "#e74c3c"; // badge-red
+                if (t.effect === 'badge-gold') bgCol = "#f1c40f";
+                else if (t.effect === 'badge-black') bgCol = "#2c3e50";
+                else if (t.effect === 'badge-blue') bgCol = "#2980b9";
+                
+                ctx.fillStyle = bgCol;
+                ctx.beginPath();
+                ctx.roundRect(-tw/2 - padX/2, -th/2 - padY/2, tw + padX, th + padY, 12);
+                ctx.fill();
+                
+                // Kaşe İçi Çerçeve
+                ctx.strokeStyle = t.effect === 'badge-gold' ? "rgba(0,0,0,0.3)" : "rgba(255,255,255,0.4)";
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(-tw/2 - padX/2 + 6, -th/2 - padY/2 + 6, tw + padX - 12, th + padY - 12, 6);
+                ctx.stroke();
+                
+                ctx.restore();
+                
+                ctx.fillStyle = t.effect === 'badge-gold' ? "#111" : "#fff";
+                ctx.shadowColor = t.effect === 'badge-gold' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.8)";
+                ctx.shadowBlur = 4;
+                ctx.fillText(t.text, 0, 0);
+            }
+            else if (t.effect === '3d') {
                 let depth = Math.floor(t.size / 4);
                 ctx.save();
                 ctx.fillStyle = t.color;
@@ -595,6 +702,25 @@
         });
 
         ['logo1','logo2'].forEach(k=>{ if(state.imgs[k].obj) { const i=state.imgs[k].obj, lw=canvas.width*(state.imgs[k].size/100), lh=lw*(i.height/i.width); ctx.drawImage(i, (canvas.width-lw)*(state.imgs[k].x/100), (canvas.height-lh)*(state.imgs[k].y/100), lw, lh); } });
+        
+        // YENİ: FİLİGRAN (WATERMARK) UYGULAMASI
+        if (document.getElementById('showWatermark').checked) {
+            let wmText = document.getElementById('watermarkText').value || "KOPYALANAMAZ";
+            ctx.save();
+            ctx.font = "bold 50px Montserrat";
+            ctx.fillStyle = "rgba(255, 255, 255, 0.2)"; // Yarı şeffaf beyaz
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.rotate(-30 * Math.PI / 180);
+            
+            // Tüm ekranı kaplayacak şekilde çapraz döşe
+            for(let wx = -canvas.width; wx < canvas.width * 2; wx += 400) {
+                for(let wy = -canvas.height; wy < canvas.height * 2; wy += 200) {
+                    ctx.fillText(wmText, wx, wy);
+                }
+            }
+            ctx.restore();
+        }
     }
 
     function drawCr(c,d,x,y,w,h) { const i=d.obj, rB=w/h, rI=i.width/i.height; let sw,sh,sx,sy; if(rI>rB){sh=i.height; sw=sh*rB;} else {sw=i.width; sh=sw/rB;} sx=(i.width-sw)*(d.x/100); sy=(i.height-sh)*(d.y/100); c.drawImage(i,sx,sy,sw,sh,x,y,w,h); }
@@ -606,6 +732,19 @@
     
     function handleTextAction(){ const v=document.getElementById('tTxt').value; if(!v)return; saveState(); const f=document.getElementById('tFont').value, s=document.getElementById('tSize').value, c=document.getElementById('tColor').value, it=document.getElementById('tItalic').checked, ef=document.getElementById('tEffect').value; if(state.editingId!==null){ const t=state.texts.find(x=>x.id===state.editingId); t.text=v; t.font=f; t.size=s; t.color=c; t.italic=it; t.effect=ef; cancelEdit(); } else { const id=Date.now(); state.texts.push({id, text:v, font:f, size:s, color:c, italic:it, effect:ef, x:50, y:50, angle:0}); loadTextToEdit(id); } draw(); renderLayerList(); }
     
+    // YENİ KAŞE EKLEME FONKSİYONU
+    function addBadge() {
+        saveState();
+        const bText = document.getElementById('badgeSelect').value;
+        const bStyle = document.getElementById('badgeStyle').value;
+        const id = Date.now();
+        // Hazır kaşe şablonu (Köşede çapraz başlasın diye angle:-15, size:40)
+        state.texts.push({id: id, text: bText, font: "'Montserrat'", size: 40, color: '#ffffff', italic: false, effect: bStyle, x: 20, y: 20, angle: -15});
+        loadTextToEdit(id);
+        draw();
+        renderLayerList();
+    }
+
     function loadTextToEdit(id){ const t=state.texts.find(x=>x.id===id); state.editingId=id; document.getElementById('tTxt').value=t.text; document.getElementById('tFont').value=t.font; document.getElementById('tSize').value=t.size; document.getElementById('tColor').value=t.color; document.getElementById('tItalic').checked=t.italic; document.getElementById('tEffect').value=t.effect||'none'; document.getElementById('textPosSettings').style.display='block'; document.getElementById('txtX').value=t.x; document.getElementById('txtY').value=t.y; document.getElementById('txtA').value=t.angle||0; document.getElementById('btnAction').innerText="GÜNCELLE ✅"; renderLayerList(); draw(); }
     
     function moveText(a,v){ if(state.editingId){ state.texts.find(x=>x.id===state.editingId)[a]=v; draw(); } }
@@ -638,8 +777,8 @@
     }
     
     function resetProject(){ if(confirm('Sıfırlansın mı?')) location.reload(); }
-    function saveProject() { const data = { projectName: state.projectName, format: state.format, texts: state.texts, gallery: state.gallery, footer: { show: document.getElementById('showFooter').checked, mode: state.footer.mode, agentImgSrc: state.footer.agentImgSrc, tel: document.getElementById('footerTel').value, web: document.getElementById('footerWeb').value, h: document.getElementById('footerHeight').value, c: document.getElementById('footerColor').value, name: document.getElementById('agentName').value, title: document.getElementById('agentTitle').value, extra: document.getElementById('agentExtra').value, fts: [1,2,3,4,5,6].map(n=>document.getElementById('feat'+n).value) }, header: { show: document.getElementById('showHeader').checked, text: document.getElementById('headerText').value, h: document.getElementById('headerHeight').value, f: document.getElementById('headerFont').value, fs: document.getElementById('headerFontSize').value, i: document.getElementById('headerItalic').checked, bg: document.getElementById('headerBg').value, c: document.getElementById('headerColor').value }, imgs: {} }; for(let k in state.imgs) if(state.imgs[k].src) data.imgs[k] = {src: state.imgs[k].src, x: state.imgs[k].x, y: state.imgs[k].y, size: state.imgs[k].size, fileName: state.imgs[k].fileName}; const blob = new Blob([JSON.stringify(data)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = state.projectName + '.json'; a.click(); }
-    function loadProject(input) { if(!input.files[0]) return; const reader = new FileReader(); reader.onload = function(e) { const d = JSON.parse(e.target.result); state.format = d.format || 'post'; state.texts = d.texts || []; state.gallery = d.gallery || { w: 95, h: 25, x: 50, y: 70 }; if(d.header) { document.getElementById('showHeader').checked = d.header.show; document.getElementById('headerText').value = d.header.text || ""; document.getElementById('headerHeight').value = d.header.h || 80; document.getElementById('headerFont').value = d.header.f || "'Montserrat'"; document.getElementById('headerFontSize').value = d.header.fs || 40; document.getElementById('headerItalic').checked = d.header.i || false; document.getElementById('headerBg').value = d.header.bg || "#ffffff"; document.getElementById('headerColor').value = d.header.c || "#003399"; } if(d.footer) { const f = d.footer; document.getElementById('showFooter').checked = f.show !== undefined ? f.show : true; state.footer.mode = f.mode || 'simple'; document.getElementById('footerTel').value = f.tel || ""; document.getElementById('footerWeb').value = f.web || ""; document.getElementById('footerHeight').value = f.h || 200; document.getElementById('footerColor').value = f.c || "#000000"; document.getElementById('agentName').value = f.name || ""; document.getElementById('agentTitle').value = f.title || ""; document.getElementById('agentExtra').value = f.extra || ""; if(f.fts) f.fts.forEach((val, i) => { if(document.getElementById('feat'+(i+1))) document.getElementById('feat'+(i+1)).value = val; }); if(f.agentImgSrc) { state.footer.agentImgSrc = f.agentImgSrc; const img = new Image(); img.src = f.agentImgSrc; img.onload = () => { state.footer.agentImg = img; draw(); }; } } for(let k in d.imgs) { state.imgs[k].x = d.imgs[k].x; state.imgs[k].y = d.imgs[k].y; state.imgs[k].size = d.imgs[k].size || 15; state.imgs[k].fileName = d.imgs[k].fileName || "Bilinmiyor"; if(document.getElementById('name-'+k)) document.getElementById('name-'+k).innerText = state.imgs[k].fileName; state.imgs[k].src = d.imgs[k].src; if(state.imgs[k].src) { const img = new Image(); img.src = state.imgs[k].src; img.onload = () => { state.imgs[k].obj = img; draw(); }; } } setFormat(state.format); setFooterMode(state.footer.mode); renderLayerList(); draw(); }; reader.readAsText(input.files[0]); }
+    function saveProject() { const data = { projectName: state.projectName, format: state.format, texts: state.texts, gallery: state.gallery, filters: state.filters, footer: { show: document.getElementById('showFooter').checked, mode: state.footer.mode, agentImgSrc: state.footer.agentImgSrc, tel: document.getElementById('footerTel').value, web: document.getElementById('footerWeb').value, h: document.getElementById('footerHeight').value, c: document.getElementById('footerColor').value, name: document.getElementById('agentName').value, title: document.getElementById('agentTitle').value, extra: document.getElementById('agentExtra').value, fts: [1,2,3,4,5,6].map(n=>document.getElementById('feat'+n).value) }, header: { show: document.getElementById('showHeader').checked, text: document.getElementById('headerText').value, h: document.getElementById('headerHeight').value, f: document.getElementById('headerFont').value, fs: document.getElementById('headerFontSize').value, i: document.getElementById('headerItalic').checked, bg: document.getElementById('headerBg').value, c: document.getElementById('headerColor').value }, imgs: {}, wm: { show: document.getElementById('showWatermark').checked, text: document.getElementById('watermarkText').value } }; for(let k in state.imgs) if(state.imgs[k].src) data.imgs[k] = {src: state.imgs[k].src, x: state.imgs[k].x, y: state.imgs[k].y, size: state.imgs[k].size, fileName: state.imgs[k].fileName}; const blob = new Blob([JSON.stringify(data)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = state.projectName + '.json'; a.click(); }
+    function loadProject(input) { if(!input.files[0]) return; const reader = new FileReader(); reader.onload = function(e) { const d = JSON.parse(e.target.result); state.format = d.format || 'post'; state.texts = d.texts || []; state.gallery = d.gallery || { w: 95, h: 25, x: 50, y: 70 }; if(d.filters) { state.filters = d.filters; document.getElementById('fltBr').value = d.filters.br; document.getElementById('fltSat').value = d.filters.sat; document.getElementById('fltCt').value = d.filters.ct; } if(d.header) { document.getElementById('showHeader').checked = d.header.show; document.getElementById('headerText').value = d.header.text || ""; document.getElementById('headerHeight').value = d.header.h || 80; document.getElementById('headerFont').value = d.header.f || "'Montserrat'"; document.getElementById('headerFontSize').value = d.header.fs || 40; document.getElementById('headerItalic').checked = d.header.i || false; document.getElementById('headerBg').value = d.header.bg || "#ffffff"; document.getElementById('headerColor').value = d.header.c || "#003399"; } if(d.footer) { const f = d.footer; document.getElementById('showFooter').checked = f.show !== undefined ? f.show : true; state.footer.mode = f.mode || 'simple'; document.getElementById('footerTel').value = f.tel || ""; document.getElementById('footerWeb').value = f.web || ""; document.getElementById('footerHeight').value = f.h || 200; document.getElementById('footerColor').value = f.c || "#000000"; document.getElementById('agentName').value = f.name || ""; document.getElementById('agentTitle').value = f.title || ""; document.getElementById('agentExtra').value = f.extra || ""; if(f.fts) f.fts.forEach((val, i) => { if(document.getElementById('feat'+(i+1))) document.getElementById('feat'+(i+1)).value = val; }); if(f.agentImgSrc) { state.footer.agentImgSrc = f.agentImgSrc; const img = new Image(); img.src = f.agentImgSrc; img.onload = () => { state.footer.agentImg = img; draw(); }; } } if(d.wm) { document.getElementById('showWatermark').checked = d.wm.show; document.getElementById('watermarkText').value = d.wm.text; } for(let k in d.imgs) { state.imgs[k].x = d.imgs[k].x; state.imgs[k].y = d.imgs[k].y; state.imgs[k].size = d.imgs[k].size || 15; state.imgs[k].fileName = d.imgs[k].fileName || "Bilinmiyor"; if(document.getElementById('name-'+k)) document.getElementById('name-'+k).innerText = state.imgs[k].fileName; state.imgs[k].src = d.imgs[k].src; if(state.imgs[k].src) { const img = new Image(); img.src = state.imgs[k].src; img.onload = () => { state.imgs[k].obj = img; draw(); }; } } setFormat(state.format); setFooterMode(state.footer.mode); renderLayerList(); draw(); }; reader.readAsText(input.files[0]); }
 </script>
 </body>
 </html>
