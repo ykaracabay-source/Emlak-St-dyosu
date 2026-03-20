@@ -172,7 +172,7 @@
                 <div class="img-item" onclick="selectActiveImg('sub3')" id="item-sub3">
                     <div class="img-label-area"><label>Detay 3</label><span class="file-name-display" id="name-sub3">Seçilmedi</span></div>
                     <input type="file" id="file-sub3" style="display:none" onchange="loadImg(this, 'sub3')">
-                    <button class="btn-remove-img" style="background:#f1f4f8; color:#333; margin-right:5px;" onclick="document.getElementById('file-sub1').click(); event.stopPropagation();">📂</button>
+                    <button class="btn-remove-img" style="background:#f1f4f8; color:#333; margin-right:5px;" onclick="document.getElementById('file-sub3').click(); event.stopPropagation();">📂</button>
                     <button class="btn-remove-img" onclick="removeImg('sub3', event)">✖</button>
                 </div>
                 <div class="img-item" onclick="selectActiveImg('sub4')" id="item-sub4">
@@ -238,6 +238,8 @@
                     <input type="color" id="tColor" value="#ffffff" oninput="draw()" style="width:30px; height:22px; border:none; background:transparent;">
                     <select id="tEffect" class="hf-input" style="width:auto;" onchange="draw()">
                         <option value="none">Efekt Yok</option>
+                        <option value="3d">🧊 3D Boyutlu</option>
+                        <option value="ribbon">🎀 Kırmızı Şerit</option>
                         <option value="shadow">🌑 Yumuşak Gölge</option>
                         <option value="outline">🔲 Dış Hat (Outline)</option>
                         <option value="neon">💎 Neon Işıma</option>
@@ -484,9 +486,29 @@
         if (subs.length > 0) {
             const gw = canvas.width * (state.gallery.w/100), gh = canvas.height * (state.gallery.h/100);
             const gx = (canvas.width - gw) * (state.gallery.x/100), gy = (canvas.height - gh) * (state.gallery.y/100);
-            ctx.fillStyle="rgba(0,0,0,0.5)"; ctx.fillRect(gx-10, gy-10, gw+20, gh+20);
-            const gap=15; let cols = gw > gh ? subs.length : (gw > gh*0.5 ? 2 : 1); let rows = Math.ceil(subs.length/cols); const cw = (gw - (cols-1)*gap)/cols, ch = (gh - (rows-1)*gap)/rows;
-            subs.forEach((img, i)=>{ const c=i%cols, r=Math.floor(i/cols); const ix=gx+c*(cw+gap), iy=gy+r*(ch+gap); ctx.fillStyle="#fff"; ctx.fillRect(ix-3, iy-3, cw+6, ch+6); drawCr(ctx, img, ix, iy, cw, ch); });
+            
+            const gap = 15; 
+            // GÖLGE HATASI DÜZELTİLDİ: Sütun sayısı eklenen resim sayısını geçemez
+            let maxCols = gw > gh ? subs.length : (gw > gh*0.5 ? 2 : 1); 
+            let cols = Math.min(subs.length, maxCols);
+            let rows = Math.ceil(subs.length/cols); 
+            
+            const cw = (gw - (cols-1)*gap)/cols;
+            const ch = (gh - (rows-1)*gap)/rows;
+            
+            // Sadece kullanılan alana gölge at
+            const actualW = cols * cw + (cols-1)*gap;
+            const actualH = rows * ch + (rows-1)*gap;
+            
+            ctx.fillStyle="rgba(0,0,0,0.5)"; 
+            ctx.fillRect(gx-10, gy-10, actualW+20, actualH+20);
+            
+            subs.forEach((img, i)=>{ 
+                const c=i%cols, r=Math.floor(i/cols); 
+                const ix=gx+c*(cw+gap), iy=gy+r*(ch+gap); 
+                ctx.fillStyle="#fff"; ctx.fillRect(ix-3, iy-3, cw+6, ch+6); 
+                drawCr(ctx, img, ix, iy, cw, ch); 
+            });
         }
 
         state.texts.forEach(t => {
@@ -494,7 +516,71 @@
             const tx = canvas.width * (t.x / 100); const ty = canvas.height * (t.y / 100);
             ctx.font = `${t.italic ? 'italic ' : ''}bold ${t.size}px ${t.font || 'Montserrat'}`;
             ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            if (t.effect === 'lightsaber') { ctx.shadowColor = t.color; [40, 60, 80].forEach(b => { ctx.shadowBlur = b; ctx.strokeText(t.text, tx, ty); }); ctx.lineWidth = 3; ctx.strokeStyle = "#ffffff"; ctx.strokeText(t.text, tx, ty); ctx.fillStyle = "#fff"; ctx.fillText(t.text, tx, ty); } 
+            
+            if (t.effect === '3d') {
+                // 3 BOYUTLU YAZI EFEKTİ
+                let depth = Math.floor(t.size / 4);
+                ctx.save();
+                ctx.fillStyle = t.color;
+                ctx.shadowColor = "rgba(0,0,0,0.6)";
+                ctx.shadowBlur = 3;
+                ctx.shadowOffsetY = 2;
+                // Derinlik katmanları
+                for(let i = depth; i > 0; i -= 1) {
+                    ctx.fillText(t.text, tx, ty + i);
+                }
+                ctx.restore();
+                
+                // Ön yüz
+                ctx.fillStyle = t.color;
+                ctx.shadowColor = "rgba(0,0,0,0.3)";
+                ctx.shadowBlur = 4;
+                ctx.fillText(t.text, tx, ty);
+                // Canlılık için ince dış hat
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = "rgba(255,255,255,0.7)";
+                ctx.strokeText(t.text, tx, ty);
+            }
+            else if (t.effect === 'ribbon') {
+                // KIRMIZI ŞERİT (RİBBON) EFEKTİ
+                let tw = ctx.measureText(t.text).width;
+                let th = t.size * 1.5;
+                let pad = t.size * 0.8;
+                
+                ctx.save();
+                ctx.shadowColor = "rgba(0,0,0,0.6)";
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetY = 5;
+                
+                // Ana Kırmızı Şerit Poligonu
+                ctx.fillStyle = "#e74c3c"; // Şerit rengi
+                ctx.beginPath();
+                ctx.moveTo(tx - tw/2 - pad - 10, ty + th/2);
+                ctx.lineTo(tx - tw/2 - pad + 15, ty - th/2);
+                ctx.lineTo(tx + tw/2 + pad + 15, ty - th/2);
+                ctx.lineTo(tx + tw/2 + pad - 10, ty + th/2);
+                ctx.fill();
+                ctx.restore();
+                
+                // İnce iç çerçeve (Şık görünüm için)
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(tx - tw/2 - pad + 1, ty + th/2 - 4);
+                ctx.lineTo(tx - tw/2 - pad + 20, ty - th/2 + 4);
+                ctx.lineTo(tx + tw/2 + pad + 2, ty - th/2 + 4);
+                ctx.lineTo(tx + tw/2 + pad - 17, ty + th/2 - 4);
+                ctx.strokeStyle = "rgba(255,255,255,0.3)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+
+                // Metnin kendisi
+                ctx.fillStyle = t.color;
+                ctx.shadowColor = "rgba(0,0,0,0.8)";
+                ctx.shadowBlur = 5;
+                ctx.fillText(t.text, tx, ty);
+            }
+            else if (t.effect === 'lightsaber') { ctx.shadowColor = t.color; [40, 60, 80].forEach(b => { ctx.shadowBlur = b; ctx.strokeText(t.text, tx, ty); }); ctx.lineWidth = 3; ctx.strokeStyle = "#ffffff"; ctx.strokeText(t.text, tx, ty); ctx.fillStyle = "#fff"; ctx.fillText(t.text, tx, ty); } 
             else if (t.effect === 'gold') { ctx.shadowColor = "#000"; ctx.shadowBlur = 5; ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 4; ctx.strokeText(t.text, tx, ty); ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.strokeText(t.text, tx, ty); ctx.fillStyle = t.color; ctx.fillText(t.text, tx, ty); }
             else if (t.effect === 'retro') { ctx.shadowColor = "#ff00ff"; ctx.shadowBlur = 15; ctx.strokeStyle = "#00ffff"; ctx.lineWidth = 3; ctx.strokeText(t.text, tx, ty); ctx.fillStyle = "#ff00ff"; ctx.fillText(t.text, tx, ty); }
             else if (t.effect === 'neon') { ctx.shadowColor = t.color; ctx.shadowBlur = 25; ctx.lineWidth = 3; ctx.strokeStyle = "#fff"; ctx.strokeText(t.text, tx, ty); ctx.fillStyle = t.color; ctx.fillText(t.text, tx, ty); } 
@@ -528,7 +614,22 @@
     function ins(c){ document.getElementById('tTxt').value+=c+" "; document.getElementById('tTxt').focus(); }
     function loadAgentImg(i){ if(i.files[0]){ saveState(); const r=new FileReader(); r.onload=e=>{ const img=new Image(); img.src=e.target.result; img.onload=()=>{state.footer.agentImg=img; state.footer.agentImgSrc=e.target.result; draw();}; }; r.readAsDataURL(i.files[0]); } }
     function download(){ const a=document.createElement('a'); a.download='ilan.jpg'; a.href=canvas.toDataURL('image/jpeg',0.95); a.click(); }
-    async function copyToClipboard() { try { const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const data = [new ClipboardItem({ 'image/png': blob })]; await navigator.clipboard.write(data); alert("İlan Panoya Kopyalandı!"); } catch (err) { alert("Hata oluştu."); } }
+    
+    // KOPYALA HATASI DÜZELTİLDİ (Güvenlik Önlemli Alternatif Yapı)
+    async function copyToClipboard() { 
+        try { 
+            if (!navigator.clipboard || !navigator.clipboard.write) {
+                throw new Error("Tarayıcı panoya doğrudan yazmayı desteklemiyor.");
+            }
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
+            const data = [new ClipboardItem({ 'image/png': blob })]; 
+            await navigator.clipboard.write(data); 
+            alert("İlan Panoya Kopyalandı! (WhatsApp'a yapıştırabilirsiniz)"); 
+        } catch (err) { 
+            alert("Güvenlik nedeniyle tarayıcınız kopyalamayı engelledi.\nLütfen 'JPG KAYDET' butonunu kullanın."); 
+        } 
+    }
+    
     function resetProject(){ if(confirm('Sıfırlansın mı?')) location.reload(); }
     function saveProject() { const data = { projectName: state.projectName, format: state.format, texts: state.texts, gallery: state.gallery, footer: { show: document.getElementById('showFooter').checked, mode: state.footer.mode, agentImgSrc: state.footer.agentImgSrc, tel: document.getElementById('footerTel').value, web: document.getElementById('footerWeb').value, h: document.getElementById('footerHeight').value, c: document.getElementById('footerColor').value, name: document.getElementById('agentName').value, title: document.getElementById('agentTitle').value, extra: document.getElementById('agentExtra').value, fts: [1,2,3,4,5,6].map(n=>document.getElementById('feat'+n).value) }, header: { show: document.getElementById('showHeader').checked, text: document.getElementById('headerText').value, h: document.getElementById('headerHeight').value, f: document.getElementById('headerFont').value, fs: document.getElementById('headerFontSize').value, i: document.getElementById('headerItalic').checked, bg: document.getElementById('headerBg').value, c: document.getElementById('headerColor').value }, imgs: {} }; for(let k in state.imgs) if(state.imgs[k].src) data.imgs[k] = {src: state.imgs[k].src, x: state.imgs[k].x, y: state.imgs[k].y, size: state.imgs[k].size, fileName: state.imgs[k].fileName}; const blob = new Blob([JSON.stringify(data)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = state.projectName + '.json'; a.click(); }
     function loadProject(input) { if(!input.files[0]) return; const reader = new FileReader(); reader.onload = function(e) { const d = JSON.parse(e.target.result); state.format = d.format || 'post'; state.texts = d.texts || []; state.gallery = d.gallery || { w: 95, h: 25, x: 50, y: 70 }; if(d.header) { document.getElementById('showHeader').checked = d.header.show; document.getElementById('headerText').value = d.header.text || ""; document.getElementById('headerHeight').value = d.header.h || 80; document.getElementById('headerFont').value = d.header.f || "'Montserrat'"; document.getElementById('headerFontSize').value = d.header.fs || 40; document.getElementById('headerItalic').checked = d.header.i || false; document.getElementById('headerBg').value = d.header.bg || "#ffffff"; document.getElementById('headerColor').value = d.header.c || "#003399"; } if(d.footer) { const f = d.footer; document.getElementById('showFooter').checked = f.show !== undefined ? f.show : true; state.footer.mode = f.mode || 'simple'; document.getElementById('footerTel').value = f.tel || ""; document.getElementById('footerWeb').value = f.web || ""; document.getElementById('footerHeight').value = f.h || 200; document.getElementById('footerColor').value = f.c || "#000000"; document.getElementById('agentName').value = f.name || ""; document.getElementById('agentTitle').value = f.title || ""; document.getElementById('agentExtra').value = f.extra || ""; if(f.fts) f.fts.forEach((val, i) => { if(document.getElementById('feat'+(i+1))) document.getElementById('feat'+(i+1)).value = val; }); if(f.agentImgSrc) { state.footer.agentImgSrc = f.agentImgSrc; const img = new Image(); img.src = f.agentImgSrc; img.onload = () => { state.footer.agentImg = img; draw(); }; } } for(let k in d.imgs) { state.imgs[k].x = d.imgs[k].x; state.imgs[k].y = d.imgs[k].y; state.imgs[k].size = d.imgs[k].size || 15; state.imgs[k].fileName = d.imgs[k].fileName || "Bilinmiyor"; if(document.getElementById('name-'+k)) document.getElementById('name-'+k).innerText = state.imgs[k].fileName; state.imgs[k].src = d.imgs[k].src; if(state.imgs[k].src) { const img = new Image(); img.src = state.imgs[k].src; img.onload = () => { state.imgs[k].obj = img; draw(); }; } } setFormat(state.format); setFooterMode(state.footer.mode); renderLayerList(); draw(); }; reader.readAsText(input.files[0]); }
